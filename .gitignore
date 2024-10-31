@@ -163,6 +163,8 @@ cython_debug/
 
 data/raw/
 
+data/data_pool/
+
 *.deb
 
 *.deb.1
