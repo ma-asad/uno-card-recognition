@@ -169,8 +169,6 @@ data/data_pool/
 
 *.deb.1
 
-data/logs/
-
 notebooks/*.keras
 
 asad/templates
