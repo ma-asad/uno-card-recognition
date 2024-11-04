@@ -172,3 +172,5 @@ data/data_pool/
 data/logs/
 
 notebooks/*.keras
+
+asad/templates
