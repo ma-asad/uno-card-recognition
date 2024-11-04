@@ -165,6 +165,8 @@ data/raw/
 
 data/data_pool/
 
+data/new_pool/
+
 *.deb
 
 *.deb.1
