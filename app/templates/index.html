@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>UNO Card Detector</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo+Black&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body
+    class="bg-yellow-50 flex items-center justify-center h-screen p-4 md:p-12"
+  >
+    <div class="w-full h-full flex flex-col text-gray-900 items-center">
+      <div class="flex flex-row items-center justify-center mb-8">
+        <img src="/static/logo/unologo.png" class="w-20 h-16" alt="UNO Logo" />
+        <h1 class="text-5xl font-bold text-center mx-8 leading-none">
+          UNO CARD DETECTOR
+        </h1>
+        <img src="/static/logo/unologo1.png" class="w-20 h-16" alt="UNO Logo" />
+      </div>
+
+      <div class="w-full h-full flex flex-col md:flex-row">
+        <!-- Left Section -->
+        <div
+          class="w-full md:w-1/4 bg-white p-8 flex flex-col items-center justify-center space-y-4 mb-4 md:mb-0"
+        >
+          <button
+            id="cameraButton"
+            class="w-full bg-red-800 text-white py-2 px-4 rounded-lg hover:bg-gray-600"
+          >
+            Use Camera
+          </button>
+          <button
+            id="imageButton"
+            class="w-full bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-red-800"
+          >
+            Upload Image
+          </button>
+          <form id="uploadForm" class="hidden" enctype="multipart/form-data">
+            <input type="file" id="fileInput" name="file" class="hidden" />
+          </form>
+        </div>
+        <!-- Middle Section -->
+        <div
+          class="w-full md:w-1/2 bg-gray-200 flex items-center justify-center mb-4 md:mb-0"
+        >
+          <video
+            id="video"
+            class="w-full h-full rounded-lg shadow-lg hidden"
+            autoplay
+          ></video>
+          <img
+            id="uploadedImage"
+            class="w-full h-full rounded-lg shadow-lg hidden"
+            alt="Uploaded Image"
+          />
+          <canvas id="canvas" class="hidden"></canvas>
+        </div>
+        <!-- Right Section -->
+        <div
+          class="w-full md:w-1/4 bg-white p-8 flex flex-col items-center justify-center"
+        >
+          <div
+            id="cardDisplay"
+            class="w-full h-64 bg-gray-200 rounded-lg shadow-lg flex items-center justify-center mb-4"
+          >
+            <!-- Placeholder for detected card image -->
+          </div>
+          <p
+            id="result"
+            class="text-center text-lg font-semibold text-gray-700"
+          >
+            Detected Card: None
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let videoStream;
+      let captureInterval;
+
+      document.getElementById("cameraButton").onclick = function () {
+        const video = document.getElementById("video");
+        const uploadedImage = document.getElementById("uploadedImage");
+        const canvas = document.getElementById("canvas");
+        const context = canvas.getContext("2d");
+
+        video.classList.remove("hidden");
+        uploadedImage.classList.add("hidden");
+
+        navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
+          videoStream = stream;
+          video.srcObject = stream;
+          video.classList.remove("hidden");
+
+          captureInterval = setInterval(() => {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            canvas.toBlob(async function (blob) {
+              const formData = new FormData();
+              formData.append("file", blob, "frame.png");
+              formData.append("source", "camera");
+
+              try {
+                const response = await fetch("/upload", {
+                  method: "POST",
+                  body: formData,
+                });
+                const result = await response.json();
+
+                document.getElementById(
+                  "result"
+                ).innerText = `Detected Card: ${result.card}`;
+
+                // Display the detected card image
+                if (result.card_image_url) {
+                  const cardDisplay = document.getElementById("cardDisplay");
+                  // **Add leading slash if not present in card_image_url**
+                  let imageUrl = result.card_image_url;
+                  if (!imageUrl.startsWith("/")) {
+                    imageUrl = "/" + imageUrl;
+                  }
+                  cardDisplay.innerHTML = `<img src="${imageUrl}" class="w-full h-full object-contain">`;
+                } else {
+                  // Handle case when card_image_url is null
+                  const cardDisplay = document.getElementById("cardDisplay");
+                  cardDisplay.innerHTML = `<p class="text-center">No image available</p>`;
+                }
+              } catch (error) {
+                console.error("Error:", error);
+                document.getElementById("result").innerText =
+                  "Error processing image";
+              }
+            }, "image/png");
+          }, 1000); // Capture frame every second
+        });
+      };
+
+      document.getElementById("imageButton").onclick = function () {
+        if (videoStream) {
+          videoStream.getTracks().forEach((track) => track.stop());
+          clearInterval(captureInterval);
+        }
+        document.getElementById("fileInput").click();
+      };
+
+      document.getElementById("fileInput").onchange = async function () {
+        const file = this.files[0];
+        const video = document.getElementById("video");
+        const uploadedImage = document.getElementById("uploadedImage");
+
+        const fileURL = URL.createObjectURL(file);
+        uploadedImage.src = fileURL;
+
+        video.classList.add("hidden");
+        uploadedImage.classList.remove("hidden");
+
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("source", "upload");
+
+        try {
+          const response = await fetch("/upload", {
+            method: "POST",
+            body: formData,
+          });
+          const result = await response.json();
+          document.getElementById(
+            "result"
+          ).innerText = `Detected Card: ${result.card}`;
+
+          // Display the detected card image
+          if (result.card_image_url) {
+            const cardDisplay = document.getElementById("cardDisplay");
+            cardDisplay.innerHTML = `<img src="${result.card_image_url}" class="w-full h-full object-contain">`;
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          document.getElementById("result").innerText =
+            "Error processing image";
+        }
+      };
+    </script>
+  </body>
+</html>
