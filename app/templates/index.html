@@ -58,7 +58,7 @@
           ></video>
           <img
             id="uploadedImage"
-            class="w-full h-full rounded-lg shadow-lg hidden"
+            class="w-64 h-64 rounded-lg shadow-lg hidden object-contain"
             alt="Uploaded Image"
           />
           <canvas id="canvas" class="hidden"></canvas>
@@ -130,7 +130,7 @@
                   if (!imageUrl.startsWith("/")) {
                     imageUrl = "/" + imageUrl;
                   }
-                  cardDisplay.innerHTML = `<img src="${imageUrl}" class="w-full h-full object-contain">`;
+                  cardDisplay.innerHTML = `<img src="${imageUrl}" class="w-64 h-64 object-contain mx-auto">`;
                 } else {
                   // Handle case when card_image_url is null
                   const cardDisplay = document.getElementById("cardDisplay");

@@ -144,9 +144,10 @@ class UNOCardDetector:
                 # Adjust the thresholds based on testing
                 if area > min_area and num_inliers > min_inliers:
                     card_name = best_match_data['card_name']
+                    display_card_name = '_'.join(card_name.split('_')[:2])
                     print(
-                        f"Detected card: {card_name}, Area: {area:.2f}, Inliers: {num_inliers}")
-                    return card_name
+                        f"Detected card: {display_card_name}, Area: {area:.2f}, Inliers: {num_inliers}")
+                    return display_card_name
                 else:
                     print("Detection did not meet thresholds.")
                     return "Unknown Card"
