@@ -169,6 +169,8 @@ data/new_pool/
 
 data/augmented_pool/
 
+data/validation_pool/
+
 app/static/img/
 
 *.deb
