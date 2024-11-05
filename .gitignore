@@ -167,6 +167,10 @@ data/data_pool/
 
 data/new_pool/
 
+data/augmented_pool/
+
+app/static/img/
+
 *.deb
 
 *.deb.1
