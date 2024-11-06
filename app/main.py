@@ -5,9 +5,9 @@ import cv2
 import numpy as np
 import os
 
-from orb import UNOCardDetector  # Import the UNOCardDetector class
+from orb import UNOCardDetector  # Import the UNOCardDetector class from orb.py
 
-# Initialize Flask app with correct template and static folder paths
+# Initialize Flask app with template and static folder paths
 app = Flask(__name__,
             template_folder='templates',
             static_folder='static')
@@ -34,15 +34,11 @@ def detect_uno_card(image_path):
     return detected_card
 
 # Route to serve the index.html
-
-
 @app.route('/')
 def index():
     return render_template('index.html')
 
 # Route to handle image uploads
-
-
 @app.route('/upload', methods=['POST'])
 def upload_image():
     if 'file' not in request.files:
@@ -88,9 +84,6 @@ def upload_image():
             'message': message,
             'card_image_url': card_image_url
         })
-
-# Remove the unnecessary route to serve static card images
-# Flask serves static files from the 'static' folder by default
 
 
 if __name__ == '__main__':
